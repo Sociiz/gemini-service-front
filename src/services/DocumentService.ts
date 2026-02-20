@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:3000/v1/analisar-upload";
+const API_URL = import.meta.env.VITE_API_URL;
 
 export interface DocumentAnalysis {
   ehValido: boolean;
@@ -16,7 +16,7 @@ export interface HistoryEntry {
   timestamp: Date;
   result: DocumentAnalysis;
   prompt?: string;
-  preview: string | null; // base64 da imagem ou null para PDF
+  preview: string | null; 
 }
 
 export async function analisarDocumento(file: File, prompt?: string): Promise<DocumentAnalysis> {
