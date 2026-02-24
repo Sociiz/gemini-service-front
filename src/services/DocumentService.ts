@@ -16,15 +16,34 @@ export interface HistoryEntry {
   timestamp: Date;
   result: DocumentAnalysis;
   prompt?: string;
-  preview: string | null; 
+  preview: string | null;
+}
+
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = (reader.result as string).split(",")[1];
+      resolve(result);
+    };
+    reader.onerror = () => reject(new Error("Falha ao converter arquivo para base64"));
+    reader.readAsDataURL(file);
+  });
 }
 
 export async function analisarDocumento(file: File, prompt?: string): Promise<DocumentAnalysis> {
-  const form = new FormData();
-  form.append("arquivo", file);
-  if (prompt?.trim()) form.append("prompt", prompt.trim());
+  const imagemBase64 = await fileToBase64(file);
 
-  const res = await fetch(API_URL, { method: "POST", body: form });
+  const res = await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      imagemBase64,
+      mimeType: file.type,
+      ...(prompt?.trim() ? { prompt: prompt.trim() } : {}),
+    }),
+  });
+
   if (!res.ok) throw new Error(`Erro ${res.status}`);
   return res.json();
 }
