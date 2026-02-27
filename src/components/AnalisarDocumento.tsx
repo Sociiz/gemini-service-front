@@ -79,7 +79,6 @@ export default function DocAnalyzer() {
     setLoading(true);
     setError(null);
     try {
-      console.log({ filename: file.name, nome, cpf, prompt });
       const result = await analisarDocumento(
         file,
         prompt,
