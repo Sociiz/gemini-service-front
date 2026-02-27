@@ -1,4 +1,5 @@
 const API_URL = import.meta.env.VITE_API_URL;
+const API_KEY = import.meta.env.VITE_API_KEY;
 
 export interface DocumentAnalysis {
   ehValido: boolean;
@@ -14,8 +15,11 @@ export interface HistoryEntry {
   id: string;
   fileName: string;
   timestamp: Date;
-  result: DocumentAnalysis;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  result: any;
   prompt?: string;
+  nome?: string;   
+  cpf?: string;    
   preview: string | null;
 }
 
@@ -31,16 +35,20 @@ function fileToBase64(file: File): Promise<string> {
   });
 }
 
-export async function analisarDocumento(file: File, prompt?: string): Promise<DocumentAnalysis> {
+export async function analisarDocumento(file: File, prompt?: string, nome?: string, cpf?: string): Promise<DocumentAnalysis> {
   const imagemBase64 = await fileToBase64(file);
+  const contexto = nome || cpf ? `\n\nDados informados pelo usuário — Nome: ${nome || "não informado"}, CPF: ${cpf || "não informado"}.`
+      : "";
+
+      const promptFinal = (prompt ?? "") + contexto
 
   const res = await fetch(API_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "x-api-key": API_KEY},
     body: JSON.stringify({
       imagemBase64,
       mimeType: file.type,
-      ...(prompt?.trim() ? { prompt: prompt.trim() } : {}),
+      ...(promptFinal?.trim() ? { prompt: promptFinal.trim() } : {}),
     }),
   });
 

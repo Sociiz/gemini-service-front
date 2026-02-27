@@ -37,7 +37,7 @@ export function ResultPanel({ history }: ResultPanelProps) {
             className="grid grid-cols-3 divide-x divide-gray-100"
             style={{ height: 340 }}
           >
-            {/* Coluna 1: Foto / arquivo */}
+            {/* Coluna 1: Documento */}
             <div className="flex flex-col bg-gray-50 overflow-hidden">
               <p className="text-xs font-medium text-gray-400 uppercase tracking-wide px-4 pt-3 pb-2 flex-shrink-0">
                 Documento
@@ -58,20 +58,56 @@ export function ResultPanel({ history }: ResultPanelProps) {
               )}
             </div>
 
-            {/* Coluna 2: Prompt utilizado */}
+            {/* Coluna 2: Contexto (nome, CPF e prompt) */}
             <div className="flex flex-col bg-indigo-50 overflow-hidden">
               <p className="text-xs font-medium text-indigo-400 uppercase tracking-wide px-4 pt-3 pb-2 flex-shrink-0">
-                Prompt utilizado
+                Contexto
               </p>
-              <div className="flex-1 px-4 pb-4 overflow-y-auto min-h-0">
+              <div className="flex-1 px-4 pb-4 overflow-y-auto min-h-0 space-y-3">
+                {/* Nome e CPF */}
+                {(entry.nome || entry.cpf) && (
+                  <div className="space-y-1">
+                    {entry.nome && (
+                      <div>
+                        <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wide">
+                          Nome
+                        </span>
+                        <p className="text-xs text-indigo-700">{entry.nome}</p>
+                      </div>
+                    )}
+                    {entry.cpf && (
+                      <div>
+                        <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wide">
+                          CPF
+                        </span>
+                        <p className="text-xs text-indigo-700">{entry.cpf}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Divisor só aparece se tiver nome/cpf E prompt */}
+                {(entry.nome || entry.cpf) && entry.prompt && (
+                  <hr className="border-indigo-200" />
+                )}
+
+                {/* Prompt */}
                 {entry.prompt ? (
-                  <p className="text-xs text-indigo-700 leading-relaxed">
-                    {entry.prompt}
-                  </p>
+                  <div>
+                    <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wide">
+                      Prompt
+                    </span>
+                    <p className="text-xs text-indigo-700 leading-relaxed mt-0.5">
+                      {entry.prompt}
+                    </p>
+                  </div>
                 ) : (
-                  <p className="text-xs text-indigo-300 italic">
-                    Prompt padrão (nenhum personalizado)
-                  </p>
+                  !entry.nome &&
+                  !entry.cpf && (
+                    <p className="text-xs text-indigo-300 italic">
+                      Sem contexto adicional
+                    </p>
+                  )
                 )}
               </div>
             </div>

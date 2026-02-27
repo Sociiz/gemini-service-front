@@ -1,10 +1,12 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   analisarDocumento,
   type HistoryEntry,
 } from "../services/DocumentService";
 import { UploadArea } from "./UploadArea";
 import { ResultPanel } from "./ResultPanel";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const STORAGE_KEY = "doc-analyzer-history";
 
@@ -38,6 +40,8 @@ export default function DocAnalyzer() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [prompt, setPrompt] = useState("");
+  const [nome, setNome] = useState("");
+  const [cpf, setCpf] = useState("");
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<HistoryEntry[]>(loadHistory);
   const [error, setError] = useState<string | null>(null);
@@ -58,18 +62,38 @@ export default function DocAnalyzer() {
     }
   };
 
+  const formatCpf = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 11);
+    return digits
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+  };
+
+  const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCpf(formatCpf(e.target.value));
+  };
+
   const handleAnalyze = async () => {
     if (!file) return;
     setLoading(true);
     setError(null);
     try {
-      const result = await analisarDocumento(file, prompt);
+      console.log({ filename: file.name, nome, cpf, prompt });
+      const result = await analisarDocumento(
+        file,
+        prompt,
+        nome.trim(),
+        cpf.trim(),
+      );
       const entry: HistoryEntry = {
         id: crypto.randomUUID(),
         fileName: file.name,
         timestamp: new Date(),
         result,
         prompt: prompt.trim() || undefined,
+        nome: nome.trim() || undefined,
+        cpf: cpf.trim() || undefined,
         preview,
       };
       setHistory((prev) => [entry, ...prev]);
@@ -105,6 +129,32 @@ export default function DocAnalyzer() {
               Limpar histórico
             </button>
           )}
+        </div>
+
+        {/* Campos de nome e CPF */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white border border-gray-200 rounded-xl p-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="nome">Nome completo</Label>
+            <Input
+              id="nome"
+              placeholder="João da Silva"
+              value={nome}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setNome(e.target.value)
+              }
+              disabled={loading}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="cpf">CPF</Label>
+            <Input
+              id="cpf"
+              placeholder="000.000.000-00"
+              value={cpf}
+              onChange={handleCpfChange}
+              disabled={loading}
+            />
+          </div>
         </div>
 
         <UploadArea
